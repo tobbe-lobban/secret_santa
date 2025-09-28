@@ -144,23 +144,69 @@ optional<Permutation> generate_perm(const unsigned n, const People &peeps,
   return perm;
 }
 
+void read_people_line(People &cant_give_to, istream &input_stream) {
+  string line, other;
+  getline(input_stream, line);
+  istringstream iss{line};
+  while (iss >> other) cant_give_to.emplace_back(std::move(other));
+}
+
+[[nodiscard]]
+bool add_person(string &person, People &peeps, Constraints &consts,
+                istream &input_stream) {
+  auto [it, inserted] = consts.insert(make_pair(person, People{}));
+  if (!inserted) {
+    cerr << "Failed to add person to constraints: " << person << endl;
+    return false;
+  }
+  peeps.emplace_back(std::move(person));
+  auto &cant_give_to = it->second;
+  read_people_line(cant_give_to, input_stream);
+  getline(input_stream, person); // deal with empty line
+  return true;
+}
+
+[[nodiscard]]
+bool populate_input(People &peeps, Constraints &consts,
+                    const filesystem::path &input_file) {
+  if (!filesystem::exists(input_file)) {
+    cerr << "File doesn't exist: " << input_file.c_str() << endl;
+    return false;
+  }
+  fstream input_stream{input_file.c_str()};
+  if (!input_stream) {
+    cerr << "Failed to construct fstream from file: " << input_file.c_str()
+         << endl;
+    return false;
+  }
+  string name;
+  while (getline(input_stream, name)) {
+    cout << "Attempting to add person to data: " << name;
+    if (!add_person(name, peeps, consts, input_stream)) {
+      cerr << " Failed to add person to data." << endl;
+      return false;
+    }
+    cout << " ... Done!" << endl;
+  }
+  return true;
+}
+
 int main(int argc, char const *argv[]) {
-  if (argc < 2) {
+  if (argc != 3) {
     print_usage();
     return EXIT_FAILURE;
   }
 
-  // add people ... 
-  const People people = {"p1", "p2", "p3"};
+  const filesystem::path input_file(argv[1]);
 
-  // individual constraints, add them below ...
-  Constraints constraints{};
-  // clang-format off
-  constraints.insert({"p1", {"p2"}});
-  constraints.insert({"p2", {"p3"}});
-  constraints.insert({"p3", {}});
-  // clang-format on
+  People people;
+  Constraints constraints;
 
+  if (!populate_input(people, constraints, input_file)) {
+    cerr << "Failed to read data from input file, aborting." << endl;
+    return EXIT_FAILURE;
+  }
+  
   if (!verify_constraints(constraints, people)) {
     std::cout << "Verifying constraints failed, exiting!" << std::endl;
     return EXIT_FAILURE;
@@ -175,7 +221,7 @@ int main(int argc, char const *argv[]) {
   auto output_dir_string{cwd_string.value()};
   if (argc == 2) {
     try {
-      const string user_supplied_output_dir_string{argv[1]};
+      const string user_supplied_output_dir_string{argv[2]};
       output_dir_string = user_supplied_output_dir_string;
 
       struct stat info;
@@ -253,8 +299,12 @@ int main(int argc, char const *argv[]) {
     secret_santa_fstream << "Total permutations: " << factorial(people.size())
                          << endl;
 
-    secret_santa_fstream << "\nGlobal search time: "
-                         <<  chrono::duration_cast<chrono::duration<double, ratio<1,1'000>>>(elapsed).count() << " ms" << endl;
+    secret_santa_fstream
+        << "\nGlobal search time: "
+        << chrono::duration_cast<chrono::duration<double, ratio<1, 1'000>>>(
+               elapsed)
+               .count()
+        << " ms" << endl;
     secret_santa_fstream << "Number of failed searches: " << fail_count << endl;
 
     std::cout << "DONE!" << endl;
