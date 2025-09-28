@@ -219,7 +219,7 @@ int main(int argc, char const *argv[]) {
   }
 
   auto output_dir_string{cwd_string.value()};
-  if (argc == 2) {
+  if (argc == 3) {
     try {
       const string user_supplied_output_dir_string{argv[2]};
       output_dir_string = user_supplied_output_dir_string;
