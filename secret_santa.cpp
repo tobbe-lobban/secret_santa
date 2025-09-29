@@ -34,14 +34,8 @@ unsigned factorial(unsigned n) {
 
 void print_usage() {
   std::cout << "Usage:" << endl;
-  std::cout << "./SecretSanta --help: display this message." << endl;
-  std::cout << "./SecretSanta: writes secret Santas to current directory."
+  std::cout << "./SecretSanta: <input file> <output dir>"
             << endl;
-  std::cout
-      << "./SecretSanta <fully-qualified path to directory>: writes secret "
-         "Santas to given directory "
-         "if it doesn't exist."
-      << endl;
 }
 
 bool i_can_give_to_j(unsigned i, unsigned j, const People &peeps,
@@ -162,7 +156,7 @@ bool add_person(string &person, People &peeps, Constraints &consts,
   peeps.emplace_back(std::move(person));
   auto &cant_give_to = it->second;
   read_people_line(cant_give_to, input_stream);
-  getline(input_stream, person); // deal with empty line
+  getline(input_stream, person);  // deal with empty line
   return true;
 }
 
@@ -206,7 +200,7 @@ int main(int argc, char const *argv[]) {
     cerr << "Failed to read data from input file, aborting." << endl;
     return EXIT_FAILURE;
   }
-  
+
   if (!verify_constraints(constraints, people)) {
     std::cout << "Verifying constraints failed, exiting!" << std::endl;
     return EXIT_FAILURE;
@@ -290,27 +284,29 @@ int main(int argc, char const *argv[]) {
 
   const string file_name = output_dir_string + "/details.txt";
   ofstream secret_santa_fstream(file_name);
-  if (secret_santa_fstream.is_open()) {
-    for (unsigned i{0}; i < nr_people; ++i) {
-      secret_santa_fstream << people[i] << "\t\t->\t" << people[found_perm->at(i)]
-                           << endl;
-    }
-    secret_santa_fstream << "\nNumber of people: " << people.size() << endl;
-    secret_santa_fstream << "Total permutations: " << factorial(people.size())
-                         << endl;
-
-    secret_santa_fstream
-        << "\nGlobal search time: "
-        << chrono::duration_cast<chrono::duration<double, ratio<1, 1'000>>>(
-               elapsed)
-               .count()
-        << " ms" << endl;
-    secret_santa_fstream << "Number of failed searches: " << fail_count << endl;
-
-    std::cout << "DONE!" << endl;
-  } else {
+  
+  if (!secret_santa_fstream.is_open()) {
     std::cout << "FAILED TO OPEN FILE: " << file_name << endl;
   }
+  
+  for (unsigned i{0}; i < nr_people; ++i) {
+    secret_santa_fstream << people[i] << "\t\t->\t" << people[found_perm->at(i)]
+                         << endl;
+  }
+  
+  secret_santa_fstream << "\nNumber of people: " << people.size() << endl;
+  secret_santa_fstream << "Total permutations: " << factorial(people.size())
+                       << endl;
+
+  secret_santa_fstream
+      << "\nGlobal search time: "
+      << chrono::duration_cast<chrono::duration<double, ratio<1, 1'000>>>(
+             elapsed)
+             .count()
+      << " ms" << endl;
+  secret_santa_fstream << "Number of failed searches: " << fail_count << endl;
+
+  std::cout << "DONE!" << endl;
 
   return EXIT_SUCCESS;
 }
