@@ -292,7 +292,7 @@ int main(int argc, char const *argv[]) {
   ofstream secret_santa_fstream(file_name);
   if (secret_santa_fstream.is_open()) {
     for (unsigned i{0}; i < nr_people; ++i) {
-      secret_santa_fstream << people[i] << " -> " << people[found_perm->at(i)]
+      secret_santa_fstream << people[i] << "\t\t->\t" << people[found_perm->at(i)]
                            << endl;
     }
     secret_santa_fstream << "\nNumber of people: " << people.size() << endl;
