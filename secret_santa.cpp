@@ -156,7 +156,6 @@ bool add_person(string &person, People &peeps, Constraints &consts,
   peeps.emplace_back(std::move(person));
   auto &cant_give_to = it->second;
   read_people_line(cant_give_to, input_stream);
-  getline(input_stream, person);  // deal with empty line
   return true;
 }
 
@@ -175,6 +174,7 @@ bool populate_input(People &peeps, Constraints &consts,
   }
   string name;
   while (getline(input_stream, name)) {
+    if(name.empty()) continue;
     cout << "Attempting to add person to data: " << name;
     if (!add_person(name, peeps, consts, input_stream)) {
       cerr << " Failed to add person to data." << endl;
@@ -265,6 +265,7 @@ int main(int argc, char const *argv[]) {
 
   if (!found_perm) {
     cerr << "TIMEOUT! Failed to find permutation." << endl;
+    cerr << "Number of failed attempts: " << fail_count << endl;
     return EXIT_FAILURE;
   }
 
