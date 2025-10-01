@@ -272,7 +272,7 @@ int main(int argc, char const *argv[]) {
   const auto elapsed = current_time - time_start;
 
   for (unsigned i{0}; i < nr_people; ++i) {
-    const auto file_name = output_dir_string + "/" + people[i];
+    const auto file_name = output_dir_string + "/" + people[i] + ".txt";
     ofstream secret_santa_fstream(file_name);
     if (secret_santa_fstream.is_open()) {
       secret_santa_fstream << people[found_perm->at(i)] << endl;
